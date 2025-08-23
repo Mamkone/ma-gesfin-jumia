@@ -3,6 +3,10 @@ const transactionForm = document.getElementById('transactionForm');
 const transactionsTableBody = document.querySelector('#transactionsTable tbody');
 const clearTransactionsBtn = document.getElementById('clearTransactionsBtn');
 
+// Éléments pour le filtrage
+const monthFilter = document.getElementById('monthFilter');
+const yearFilter = document.getElementById('yearFilter');
+
 // Variables pour les résultats totaux
 const caBrutTotalSpan = document.getElementById('caBrutTotal');
 const caNetTotalSpan = document.getElementById('caNetTotal');
@@ -20,30 +24,55 @@ function loadTransactions() {
     const savedTransactions = localStorage.getItem('jumiaFinancesTransactions');
     if (savedTransactions) {
         transactions = JSON.parse(savedTransactions);
-        renderTransactions();
-        calculateTotals();
     }
+    populateYearFilter();
+    renderTransactions();
+    calculateTotals();
 }
 
-// Fonction pour rendre les transactions dans le tableau HTML
+// Fonction pour générer les options d'années pour le filtre
+function populateYearFilter() {
+    yearFilter.innerHTML = '<option value="all">Toutes les années</option>';
+    const years = [...new Set(transactions.map(t => new Date(t.date).getFullYear()))].sort((a, b) => b - a);
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearFilter.appendChild(option);
+    });
+}
+
+// Fonction pour rendre les transactions dans le tableau HTML en fonction des filtres
 function renderTransactions() {
     transactionsTableBody.innerHTML = ''; // Effacer le contenu existant
     
-    transactions.forEach((transaction, index) => {
-        // Paramètres généraux pour le calcul
+    const selectedMonth = monthFilter.value;
+    const selectedYear = yearFilter.value;
+
+    const filteredTransactions = transactions.filter(t => {
+        const transactionDate = new Date(t.date);
+        const transactionMonth = transactionDate.getMonth() + 1; // getMonth() est de 0 à 11
+        const transactionYear = transactionDate.getFullYear();
+
+        const matchMonth = selectedMonth === 'all' || transactionMonth == selectedMonth;
+        const matchYear = selectedYear === 'all' || transactionYear == selectedYear;
+
+        return matchMonth && matchYear;
+    });
+
+    filteredTransactions.forEach((transaction, index) => {
         const fraisTraitementUnitaireJumia = parseFloat(document.getElementById('fraisTraitementUnitaireJumia').value) || 0;
         const tauxCommissionJumia = parseFloat(document.getElementById('tauxCommissionJumia').value) / 100 || 0;
         const budgetPublicitaireUnitaire = parseFloat(document.getElementById('budgetPublicitaireUnitaire').value) || 0;
 
-        // Calculs par transaction
         const allocation = transaction.quantite * (transaction.prixRevientUnitaire / 2);
         const budget = transaction.quantite * budgetPublicitaireUnitaire;
-        
-        // Nouvelle formule pour la trésorerie basée sur votre définition
         const tresorerie = (transaction.prixRevientUnitaire / 2 + transaction.prixRevientUnitaire) * transaction.quantite;
 
         const row = document.createElement('tr');
+        const formattedDate = new Date(transaction.date).toLocaleDateString('fr-FR');
         row.innerHTML = `
+            <td>${formattedDate}</td>
             <td>${transaction.designation}</td>
             <td>${transaction.quantite}</td>
             <td>${Math.round(allocation).toLocaleString()} F</td>
@@ -62,25 +91,38 @@ function calculateTotals() {
     const tauxCommissionJumia = parseFloat(document.getElementById('tauxCommissionJumia').value) / 100 || 0;
     const budgetPublicitaireUnitaire = parseFloat(document.getElementById('budgetPublicitaireUnitaire').value) || 0;
 
+    const selectedMonth = monthFilter.value;
+    const selectedYear = yearFilter.value;
+
+    const filteredTransactions = transactions.filter(t => {
+        const transactionDate = new Date(t.date);
+        const transactionMonth = transactionDate.getMonth() + 1;
+        const transactionYear = transactionDate.getFullYear();
+
+        const matchMonth = selectedMonth === 'all' || transactionMonth == selectedMonth;
+        const matchYear = selectedYear === 'all' || transactionYear == selectedYear;
+
+        return matchMonth && matchYear;
+    });
+
     let totalCaBrut = 0;
     let totalPrixRevient = 0;
+    let totalBudget = 0;
     
-    transactions.forEach(transaction => {
+    filteredTransactions.forEach(transaction => {
         totalCaBrut += transaction.quantite * transaction.prixVenteUnitaire;
         totalPrixRevient += transaction.quantite * transaction.prixRevientUnitaire;
+        totalBudget += transaction.quantite * budgetPublicitaireUnitaire;
     });
 
     const commissionTotale = totalCaBrut * tauxCommissionJumia;
-    const fraisTraitementTotal = transactions.reduce((acc, t) => acc + (t.quantite * fraisTraitementUnitaireJumia), 0);
+    const fraisTraitementTotal = filteredTransactions.reduce((acc, t) => acc + (t.quantite * fraisTraitementUnitaireJumia), 0);
     const abonnementJumiaApplicable = (totalCaBrut >= 100000) ? fraisAbonnementJumia : 0;
     const fraisTotauxJumia = commissionTotale + fraisTraitementTotal + abonnementJumiaApplicable;
     
     const caNetTotal = totalCaBrut - fraisTotauxJumia;
-    const budgetTotal = transactions.reduce((acc, t) => acc + (t.quantite * budgetPublicitaireUnitaire), 0);
-    
-    const profitNetTotal = caNetTotal - totalPrixRevient - budgetTotal;
+    const profitNetTotal = caNetTotal - totalPrixRevient - totalBudget;
 
-    // Affichage des résultats globaux
     caBrutTotalSpan.textContent = `${Math.round(totalCaBrut).toLocaleString()} F`;
     caNetTotalSpan.textContent = `${Math.round(caNetTotal).toLocaleString()} F`;
     profitNetTotalSpan.textContent = `${Math.round(profitNetTotal).toLocaleString()} F`;
@@ -105,10 +147,12 @@ transactionForm.addEventListener('submit', function(event) {
             designation,
             quantite,
             prixVenteUnitaire,
-            prixRevientUnitaire
+            prixRevientUnitaire,
+            date: new Date().toISOString() // Sauvegarder la date au format ISO
         };
         transactions.push(newTransaction);
         saveTransactions();
+        populateYearFilter();
         renderTransactions();
         calculateTotals();
         transactionForm.reset();
@@ -121,6 +165,7 @@ transactionsTableBody.addEventListener('click', function(event) {
         const index = event.target.dataset.index;
         transactions.splice(index, 1);
         saveTransactions();
+        populateYearFilter();
         renderTransactions();
         calculateTotals();
     }
@@ -131,15 +176,26 @@ clearTransactionsBtn.addEventListener('click', function() {
     if (confirm('Êtes-vous sûr de vouloir effacer toutes les transactions ? Cette action est irréversible.')) {
         transactions = [];
         saveTransactions();
+        populateYearFilter();
         renderTransactions();
         calculateTotals();
     }
 });
 
+// Écouteurs d'événements pour les filtres
+monthFilter.addEventListener('change', () => {
+    renderTransactions();
+    calculateTotals();
+});
+
+yearFilter.addEventListener('change', () => {
+    renderTransactions();
+    calculateTotals();
+});
+
 // Gérer les écouteurs d'événements pour les paramètres généraux
 const generalInputs = document.querySelectorAll('.section:first-child input');
 generalInputs.forEach(input => input.addEventListener('input', () => {
-    // Recalculer et afficher toutes les transactions et les totaux
     renderTransactions();
     calculateTotals();
 }));
