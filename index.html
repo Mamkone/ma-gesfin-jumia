@@ -57,9 +57,36 @@
 
         <div class="section">
             <h2>Historique des Transactions</h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="monthFilter">Filtrer par mois :</label>
+                    <select id="monthFilter">
+                        <option value="all">Tous les mois</option>
+                        <option value="1">Janvier</option>
+                        <option value="2">Février</option>
+                        <option value="3">Mars</option>
+                        <option value="4">Avril</option>
+                        <option value="5">Mai</option>
+                        <option value="6">Juin</option>
+                        <option value="7">Juillet</option>
+                        <option value="8">Août</option>
+                        <option value="9">Septembre</option>
+                        <option value="10">Octobre</option>
+                        <option value="11">Novembre</option>
+                        <option value="12">Décembre</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="yearFilter">Filtrer par année :</label>
+                    <select id="yearFilter">
+                        <option value="all">Toutes les années</option>
+                    </select>
+                </div>
+            </div>
             <table id="transactionsTable">
                 <thead>
                     <tr>
+                        <th>Date</th>
                         <th>Désignation</th>
                         <th>Quantité</th>
                         <th>Allocation</th>
