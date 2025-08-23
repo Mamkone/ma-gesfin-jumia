@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse Financière Jumia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Analyse Financière Jumia</h1>
+        <p class="disclaimer">Calculateur de profit et suivi des transactions.</p>
+
+        <div class="section">
+            <h2>Paramètres Généraux</h2>
+            <div class="input-group">
+                <label for="fraisAbonnementJumia">Frais d'Abonnement Mensuel Jumia (F)</label>
+                <input type="number" id="fraisAbonnementJumia" value="5000" min="0">
+                <span class="note">Ces frais s'appliquent si le CA brut mensuel est &ge; 100 000 F.</span>
+            </div>
+            <div class="input-group">
+                <label for="fraisTraitementUnitaireJumia">Frais de Traitement Unitaire Jumia (F)</label>
+                <input type="number" id="fraisTraitementUnitaireJumia" value="650" min="0">
+            </div>
+            <div class="input-group">
+                <label for="tauxCommissionJumia">Taux de Commission Jumia (%)</label>
+                <input type="number" id="tauxCommissionJumia" value="15" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="budgetPublicitaireUnitaire">Budget Publicitaire Unitaire (F)</label>
+                <input type="number" id="budgetPublicitaireUnitaire" value="500" min="0">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Saisie de Transaction</h2>
+            <form id="transactionForm">
+                <div class="input-group">
+                    <label for="designation">Désignation du Produit</label>
+                    <input type="text" id="designation" placeholder="Nom du produit" required>
+                </div>
+                <div class="input-group">
+                    <label for="quantite">Quantité vendue</label>
+                    <input type="number" id="quantite" value="1" min="1" required>
+                </div>
+                <div class="input-group">
+                    <label for="prixVenteUnitaire">Prix de Vente Unitaire (PVU) - F</label>
+                    <input type="number" id="prixVenteUnitaire" placeholder="Prix de vente unitaire" min="0" required>
+                </div>
+                <div class="input-group">
+                    <label for="prixRevientUnitaire">Prix de Revient Unitaire (PRU) - F</label>
+                    <input type="number" id="prixRevientUnitaire" placeholder="Prix de revient unitaire" min="0" required>
+                </div>
+                <button type="submit">Ajouter la transaction</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>Historique des Transactions</h2>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Désignation</th>
+                        <th>Quantité</th>
+                        <th>Allocation</th>
+                        <th>Budget</th>
+                        <th>Trésorerie</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <button id="clearTransactionsBtn">Effacer toutes les transactions</button>
+        </div>
+        
+        <div class="section">
+            <h2>Résultats Totaux</h2>
+            <div class="result-group">
+                <span>CA brut total :</span>
+                <span id="caBrutTotal" class="result-value">0 F</span>
+            </div>
+            <div class="result-group">
+                <span>CA net total :</span>
+                <span id="caNetTotal" class="result-value">0 F</span>
+            </div>
+            <div class="result-group">
+                <span>Profit net total :</span>
+                <span id="profitNetTotal" class="result-value">0 F</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
