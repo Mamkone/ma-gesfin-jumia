@@ -65,19 +65,24 @@ function renderTransactions() {
         const tauxCommissionJumia = parseFloat(document.getElementById('tauxCommissionJumia').value) / 100 || 0;
         const budgetPublicitaireUnitaire = parseFloat(document.getElementById('budgetPublicitaireUnitaire').value) || 0;
 
-        const allocation = transaction.quantite * (transaction.prixRevientUnitaire / 2);
-        const budget = transaction.quantite * budgetPublicitaireUnitaire;
+        // Calculs par transaction pour l'affichage
+        const caNet = (transaction.quantite * transaction.prixVenteUnitaire) - 
+                      ((transaction.quantite * transaction.prixVenteUnitaire * tauxCommissionJumia) + 
+                      (transaction.quantite * fraisTraitementUnitaireJumia));
+        const publicite = transaction.quantite * budgetPublicitaireUnitaire;
         const tresorerie = (transaction.prixRevientUnitaire / 2 + transaction.prixRevientUnitaire) * transaction.quantite;
-
+        const profit = caNet - (transaction.quantite * transaction.prixRevientUnitaire) - publicite;
+        
         const row = document.createElement('tr');
         const formattedDate = new Date(transaction.date).toLocaleDateString('fr-FR');
         row.innerHTML = `
             <td>${formattedDate}</td>
             <td>${transaction.designation}</td>
             <td>${transaction.quantite}</td>
-            <td>${Math.round(allocation).toLocaleString()} F</td>
-            <td>${Math.round(budget).toLocaleString()} F</td>
+            <td>${Math.round(caNet).toLocaleString()} F</td>
+            <td>${Math.round(publicite).toLocaleString()} F</td>
             <td>${Math.round(tresorerie).toLocaleString()} F</td>
+            <td>${Math.round(profit).toLocaleString()} F</td>
             <td><button class="delete-btn" data-index="${index}">Supprimer</button></td>
         `;
         transactionsTableBody.appendChild(row);
@@ -107,12 +112,12 @@ function calculateTotals() {
 
     let totalCaBrut = 0;
     let totalPrixRevient = 0;
-    let totalBudget = 0;
+    let totalPublicite = 0;
     
     filteredTransactions.forEach(transaction => {
         totalCaBrut += transaction.quantite * transaction.prixVenteUnitaire;
         totalPrixRevient += transaction.quantite * transaction.prixRevientUnitaire;
-        totalBudget += transaction.quantite * budgetPublicitaireUnitaire;
+        totalPublicite += transaction.quantite * budgetPublicitaireUnitaire;
     });
 
     const commissionTotale = totalCaBrut * tauxCommissionJumia;
@@ -121,7 +126,9 @@ function calculateTotals() {
     const fraisTotauxJumia = commissionTotale + fraisTraitementTotal + abonnementJumiaApplicable;
     
     const caNetTotal = totalCaBrut - fraisTotauxJumia;
-    const profitNetTotal = caNetTotal - totalPrixRevient - totalBudget;
+    
+    // Profit net total = CA net total - Prix de revient total - Publicité totale
+    const profitNetTotal = caNetTotal - totalPrixRevient - totalPublicite;
 
     caBrutTotalSpan.textContent = `${Math.round(totalCaBrut).toLocaleString()} F`;
     caNetTotalSpan.textContent = `${Math.round(caNetTotal).toLocaleString()} F`;
