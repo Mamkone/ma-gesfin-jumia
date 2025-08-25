@@ -71,7 +71,9 @@ function renderTransactions() {
                       (transaction.quantite * fraisTraitementUnitaireJumia));
         const publicite = transaction.quantite * budgetPublicitaireUnitaire;
         const tresorerie = (transaction.prixRevientUnitaire / 2 + transaction.prixRevientUnitaire) * transaction.quantite;
-        const profit = caNet - (transaction.quantite * transaction.prixRevientUnitaire) - publicite;
+
+        // Nouvelle formule de profit
+        const profit = caNet - (tresorerie + publicite);
         
         const row = document.createElement('tr');
         const formattedDate = new Date(transaction.date).toLocaleDateString('fr-FR');
@@ -113,11 +115,13 @@ function calculateTotals() {
     let totalCaBrut = 0;
     let totalPrixRevient = 0;
     let totalPublicite = 0;
+    let totalTresorerie = 0;
     
     filteredTransactions.forEach(transaction => {
         totalCaBrut += transaction.quantite * transaction.prixVenteUnitaire;
         totalPrixRevient += transaction.quantite * transaction.prixRevientUnitaire;
         totalPublicite += transaction.quantite * budgetPublicitaireUnitaire;
+        totalTresorerie += (transaction.prixRevientUnitaire / 2 + transaction.prixRevientUnitaire) * transaction.quantite;
     });
 
     const commissionTotale = totalCaBrut * tauxCommissionJumia;
@@ -127,8 +131,8 @@ function calculateTotals() {
     
     const caNetTotal = totalCaBrut - fraisTotauxJumia;
     
-    // Profit net total = CA net total - Prix de revient total - Publicité totale
-    const profitNetTotal = caNetTotal - totalPrixRevient - totalPublicite;
+    // Nouvelle formule pour le profit net total
+    const profitNetTotal = caNetTotal - (totalTresorerie + totalPublicite);
 
     caBrutTotalSpan.textContent = `${Math.round(totalCaBrut).toLocaleString()} F`;
     caNetTotalSpan.textContent = `${Math.round(caNetTotal).toLocaleString()} F`;
@@ -155,7 +159,7 @@ transactionForm.addEventListener('submit', function(event) {
             quantite,
             prixVenteUnitaire,
             prixRevientUnitaire,
-            date: new Date().toISOString() // Sauvegarder la date au format ISO
+            date: new Date().toISOString()
         };
         transactions.push(newTransaction);
         saveTransactions();
