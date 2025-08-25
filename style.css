@@ -130,6 +130,7 @@ h2 {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    white-space: nowrap; /* Empêche le texte de se casser sur plusieurs lignes */
 }
 
 #transactionsTable th {
@@ -182,9 +183,11 @@ h2 {
 #clearTransactionsBtn:hover {
     background-color: #c0392b;
 }
+
 /* Styles pour le filtre */
 .filter-container {
     display: flex;
+    flex-wrap: wrap; /* Permet de passer à la ligne sur mobile */
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
@@ -196,6 +199,7 @@ h2 {
 .filter-group {
     display: flex;
     align-items: center;
+    margin-bottom: 10px; /* Espace entre les groupes sur mobile */
 }
 
 .filter-group label {
@@ -211,3 +215,27 @@ h2 {
     font-size: 1em;
 }
 
+/* Media Queries pour le responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 15px;
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    h2 {
+        font-size: 1.5em;
+    }
+    /* Rendre le tableau défilable horizontalement */
+    .section:nth-of-type(3) {
+        overflow-x: auto;
+    }
+    #transactionsTable {
+        min-width: 600px; /* Assure que le tableau ne se compresse pas trop */
+    }
+    .filter-container {
+        flex-direction: column; /* Empile les filtres verticalement sur mobile */
+        align-items: flex-start;
+    }
+}
